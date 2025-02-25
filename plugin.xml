@@ -178,8 +178,8 @@
 				<pod name="FirebaseCrashlytics" spec="10.24.0"/>
 				<pod name="FirebaseFunctions" spec="10.24.0"/>
 				<pod name="FirebaseInstallations" spec="10.24.0"/>
-				<!-- <pod name="GoogleSignIn" spec="7.0.1"/>
-				<pod name="GoogleTagManager" spec="4.1.1"/> -->
+				<pod name="GoogleSignIn" spec="6.2.4"/>
+				<pod name="GoogleTagManager" spec="7.4.6"/>
 			</pods>
 		</podspec>
 
