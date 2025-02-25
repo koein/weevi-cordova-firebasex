@@ -168,7 +168,7 @@
 			<pods use-frameworks="true">
 				<pod name="FirebaseCore" spec="10.24.0"/>
 				<pod name="FirebaseAuth" spec="10.24.0"/>
-				<pod name="FirebaseAnalytics" spec="11.0.0"/>
+				<pod name="FirebaseAnalytics" spec="10.24.0"/>
 				<!--<pod name="FirebaseAnalyticsOnDeviceConversion" spec="10.24.0"/>-->
 				<pod name="FirebaseMessaging" spec="10.24.0"/>
 				<pod name="FirebasePerformance" spec="10.24.0"/>
@@ -179,7 +179,7 @@
 				<pod name="FirebaseFunctions" spec="10.24.0"/>
 				<pod name="FirebaseInstallations" spec="10.24.0"/>
 				<pod name="GoogleSignIn" spec="7.1.0"/>
-				<pod name="GoogleTagManager" spec="8.0.0"/>
+				<!-- <pod name="GoogleTagManager" spec="7.4.6"/> -->
 			</pods>
 		</podspec>
 
