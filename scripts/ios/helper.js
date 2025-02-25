@@ -14,7 +14,7 @@ var versionRegex = /\d+\.\d+\.\d+[^'"]*/,
     firebasePodRegex = /pod 'Firebase([^']+)', '(\d+\.\d+\.\d+[^'"]*)'/g,
     standardFirestorePodRegEx = /pod 'FirebaseFirestore', '(\d+\.\d+\.\d+[^'"]*)'/,
     googleSignInPodRegEx = /pod 'GoogleSignIn', '(\d+\.\d+\.\d+[^'"]*)'/,
-    googleTagManagerPodRegEx = /pod 'GoogleTagManager', '(\d+\.\d+\.\d+[^'"]*)'/,
+    // googleTagManagerPodRegEx = /pod 'GoogleTagManager', '(\d+\.\d+\.\d+[^'"]*)'/,
     prebuiltFirestorePodTemplate = "pod 'FirebaseFirestore', :tag => '{version}', :git => 'https://github.com/invertase/firestore-ios-sdk-frameworks.git'",
     iosDeploymentTargetPodRegEx = /platform :ios, '(\d+\.\d+\.?\d*)'/;
 
@@ -372,23 +372,23 @@ end
             }
         }
 
-        if(pluginVariables['IOS_GOOGLE_TAG_MANAGER_VERSION']){
-            if(pluginVariables['IOS_GOOGLE_TAG_MANAGER_VERSION'].match(versionRegex)){
-                var matches = podFileContents.match(googleTagManagerPodRegEx);
-                if(matches){
-                    matches.forEach((match) => {
-                        var currentVersion = match.match(versionRegex)[0];
-                        if(!match.match(pluginVariables['IOS_GOOGLE_TAG_MANAGER_VERSION'])){
-                            podFileContents = podFileContents.replace(match, match.replace(currentVersion, pluginVariables['IOS_GOOGLE_TAG_MANAGER_VERSION']));
-                            podFileModified = true;
-                        }
-                    });
-                    if(podFileModified) utilities.log("Google Tag Manager version set to v"+pluginVariables['IOS_GOOGLE_TAG_MANAGER_VERSION']+" in Podfile");
-                }
-            }else{
-                throw new Error("The value \""+pluginVariables['IOS_GOOGLE_TAG_MANAGER_VERSION']+"\" for IOS_GOOGLE_TAG_MANAGER_VERSION is not a valid version in the format 'X.Y.Z'")
-            }
-        }
+        // if(pluginVariables['IOS_GOOGLE_TAG_MANAGER_VERSION']){
+        //     if(pluginVariables['IOS_GOOGLE_TAG_MANAGER_VERSION'].match(versionRegex)){
+        //         var matches = podFileContents.match(googleTagManagerPodRegEx);
+        //         if(matches){
+        //             matches.forEach((match) => {
+        //                 var currentVersion = match.match(versionRegex)[0];
+        //                 if(!match.match(pluginVariables['IOS_GOOGLE_TAG_MANAGER_VERSION'])){
+        //                     podFileContents = podFileContents.replace(match, match.replace(currentVersion, pluginVariables['IOS_GOOGLE_TAG_MANAGER_VERSION']));
+        //                     podFileModified = true;
+        //                 }
+        //             });
+        //             if(podFileModified) utilities.log("Google Tag Manager version set to v"+pluginVariables['IOS_GOOGLE_TAG_MANAGER_VERSION']+" in Podfile");
+        //         }
+        //     }else{
+        //         throw new Error("The value \""+pluginVariables['IOS_GOOGLE_TAG_MANAGER_VERSION']+"\" for IOS_GOOGLE_TAG_MANAGER_VERSION is not a valid version in the format 'X.Y.Z'")
+        //     }
+        // }
 
         if(pluginVariables['IOS_USE_PRECOMPILED_FIRESTORE_POD'] === 'true'){
             var standardFirestorePodMatches = podFileContents.match(standardFirestorePodRegEx);
