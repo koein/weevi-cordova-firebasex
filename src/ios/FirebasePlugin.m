@@ -3,7 +3,7 @@
 #import "AppDelegate+FirebasePlugin.h"
 #import <Cordova/CDV.h>
 #import "AppDelegate.h"
-#import <GoogleSignIn/GoogleSignIn.h>
+// #import <GoogleSignIn/GoogleSignIn.h>
 @import FirebaseMessaging;
 @import FirebaseAnalytics;
 @import FirebaseRemoteConfig;
