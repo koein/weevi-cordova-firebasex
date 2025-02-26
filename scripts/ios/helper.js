@@ -240,11 +240,11 @@ module.exports = {
         
                 # 🛠 Fix for BoringSSL-GRPC unsupported '-G' compiler flag
                 if target.name == 'BoringSSL-GRPC'
-                    target.build_configurations.each do |config|
-                        if config.build_settings['OTHER_CFLAGS']
-                            flags = config.build_settings['OTHER_CFLAGS'].split
-                            flags.reject! { |flag| flag == '-G' }
-                            config.build_settings['OTHER_CFLAGS'] = flags.join(' ')
+                    target.source_build_phase.files.each do |file|
+                        if file.settings && file.settings['COMPILER_FLAGS']
+                            flags = file.settings['COMPILER_FLAGS'].split
+                            flags.reject! { |flag| flag == '-GCC_WARN_INHIBIT_ALL_WARNINGS' }
+                            file.settings['COMPILER_FLAGS'] = flags.join(' ')
                         end
                     end
                 end
