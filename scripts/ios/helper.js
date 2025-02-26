@@ -232,17 +232,20 @@ module.exports = {
                 target.build_configurations.each do |config|
                     config.build_settings['DEBUG_INFORMATION_FORMAT'] = '${DEBUG_INFORMATION_FORMAT}'
                     config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '${IPHONEOS_DEPLOYMENT_TARGET}'
-                    
+        
                     if target.respond_to?(:product_type) && target.product_type == "com.apple.product-type.bundle"
                         config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
                     end
                 end
         
-                # Fix for BoringSSL-GRPC unsupported '-G' compiler flag
+                # 🛠 Fix for BoringSSL-GRPC unsupported '-G' compiler flag
                 if target.name == 'BoringSSL-GRPC'
                     target.build_configurations.each do |config|
-                        config.build_settings['OTHER_CFLAGS'] ||= ['']
-                        config.build_settings['OTHER_CFLAGS'] = config.build_settings['OTHER_CFLAGS'].split(' ').reject { |flag| flag == '-G' }.join(' ')
+                        if config.build_settings['OTHER_CFLAGS']
+                            flags = config.build_settings['OTHER_CFLAGS'].split
+                            flags.reject! { |flag| flag == '-G' }
+                            config.build_settings['OTHER_CFLAGS'] = flags.join(' ')
+                        end
                     end
                 end
             end
