@@ -225,19 +225,28 @@ module.exports = {
             DEBUG_INFORMATION_FORMAT = pluginVariables['IOS_STRIP_DEBUG'] && pluginVariables['IOS_STRIP_DEBUG'] === 'true' ? 'dwarf' : 'dwarf-with-dsym',
             IPHONEOS_DEPLOYMENT_TARGET = podFile.match(iosDeploymentTargetPodRegEx)[1];
 
-        if(!podFile.match('post_install')){
-            podFile += `
-post_install do |installer|
-    installer.pods_project.targets.each do |target|
-        target.build_configurations.each do |config|
-            config.build_settings['DEBUG_INFORMATION_FORMAT'] = '${DEBUG_INFORMATION_FORMAT}'
-            config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '${IPHONEOS_DEPLOYMENT_TARGET}'
-            if target.respond_to?(:product_type) and target.product_type == "com.apple.product-type.bundle"
-                config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+            if (!podFile.match('post_install')) {
+                podFile += `
+        post_install do |installer|
+            installer.pods_project.targets.each do |target|
+                target.build_configurations.each do |config|
+                    config.build_settings['DEBUG_INFORMATION_FORMAT'] = '${DEBUG_INFORMATION_FORMAT}'
+                    config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '${IPHONEOS_DEPLOYMENT_TARGET}'
+                    
+                    if target.respond_to?(:product_type) && target.product_type == "com.apple.product-type.bundle"
+                        config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+                    end
+                end
+        
+                # Fix for BoringSSL-GRPC unsupported '-G' compiler flag
+                if target.name == 'BoringSSL-GRPC'
+                    target.build_configurations.each do |config|
+                        config.build_settings['OTHER_CFLAGS'] ||= ['']
+                        config.build_settings['OTHER_CFLAGS'] = config.build_settings['OTHER_CFLAGS'].split(' ').reject { |flag| flag == '-G' }.join(' ')
+                    end
+                end
             end
         end
-    end
-end
                 `;
             fs.writeFileSync(path.resolve(podFilePath), podFile);
             utilities.log('cordova-plugin-firebasex: Applied post install block to Podfile');
