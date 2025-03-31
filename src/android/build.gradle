@@ -29,6 +29,7 @@ android {
             firebaseCrashlytics {
                 nativeSymbolUploadEnabled true
                 unstrippedNativeLibsDir "obj/local"
+                strippedNativeLibsDir "build/intermediates/jniLibs/release"
             }
         }
     }
