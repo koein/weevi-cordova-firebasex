@@ -39,7 +39,7 @@ cdvPluginPostBuildExtras.add({
         rootProject.subprojects {
             if (name == "app") {
                 if (!plugins.hasPlugin('com.google.gms.google-services')) {
-                    // apply plugin: com.google.gms.googleservices.GoogleServicesPlugin
+                    apply plugin: com.google.gms.googleservices.GoogleServicesPlugin
                 }
             }
         }
