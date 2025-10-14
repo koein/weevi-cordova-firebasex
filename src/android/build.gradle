@@ -7,9 +7,11 @@ buildscript {
     dependencies {
         classpath "com.android.tools.build:gradle:${cordovaConfig.AGP_VERSION}"
         classpath "com.google.gms:google-services:${cordovaConfig.GRADLE_PLUGIN_GOOGLE_SERVICES_VERSION}"
-        classpath "com.google.firebase:firebase-crashlytics-gradle:2.8.1"
+        // Crashlytics removed intentionally
+        // classpath "com.google.firebase:firebase-crashlytics-gradle:2.8.1"
     }
 }
+
 repositories {
     mavenCentral()
     maven {
@@ -17,34 +19,40 @@ repositories {
     }
 }
 
-apply plugin: com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsPlugin
+// Remove Crashlytics plugin entirely
+// apply plugin: com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsPlugin
+
+// Keep only Android block if needed for other configs
 android {
     buildTypes {
         debug {
-            firebaseCrashlytics {
-                mappingFileUploadEnabled false
+            // Disable Crashlytics mapping upload if plugin present
+            if (project.hasProperty("firebaseCrashlytics")) {
+                firebaseCrashlytics {
+                    mappingFileUploadEnabled false
+                }
             }
         }
         release {
-            firebaseCrashlytics {
-                nativeSymbolUploadEnabled true
-                unstrippedNativeLibsDir "obj/local"
-                strippedNativeLibsDir "build/intermediates/jniLibs/release"
+            // Disable Crashlytics symbol uploads if plugin present
+            if (project.hasProperty("firebaseCrashlytics")) {
+                firebaseCrashlytics {
+                    nativeSymbolUploadEnabled false
+                }
             }
         }
     }
 }
 
+// Safely apply Google Services plugin *after* the Android app plugin is available
 cdvPluginPostBuildExtras.add({
     afterEvaluate {
         rootProject.subprojects {
             if (name == "app") {
                 if (!plugins.hasPlugin('com.google.gms.google-services')) {
-                    apply plugin: com.google.gms.googleservices.GoogleServicesPlugin
+                    apply plugin: 'com.google.gms.google-services'
                 }
             }
         }
     }
 })
-
-
