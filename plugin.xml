@@ -161,27 +161,80 @@
 
 		<framework src="AuthenticationServices.framework" />
 
-		<podspec>
-			<config>
-				<source url="https://cdn.cocoapods.org/"/>
-			</config>
-			<pods use-frameworks="true">
-				<pod name="FirebaseCore" spec="10.24.0"/>
-				<pod name="FirebaseAuth" spec="10.24.0"/>
-				<pod name="FirebaseAnalytics" spec="10.24.0"/>
-				<!--<pod name="FirebaseAnalyticsOnDeviceConversion" spec="10.24.0"/>-->
-				<pod name="FirebaseMessaging" spec="10.24.0"/>
-				<pod name="FirebasePerformance" spec="10.24.0"/>
-				<pod name="FirebaseRemoteConfig" spec="10.24.0"/>
-				<pod name="FirebaseInAppMessaging" spec="10.24.0-beta"/>
-				<pod name="FirebaseFirestore" spec="10.24.0"/>
-				<pod name="FirebaseCrashlytics" spec="10.24.0"/>
-				<pod name="FirebaseFunctions" spec="10.24.0"/>
-				<pod name="FirebaseInstallations" spec="10.24.0"/>
-				<!-- <pod name="GoogleSignIn" spec="7.1.0"/> -->
-				<!-- <pod name="GoogleTagManager" spec="7.4.6"/> -->
-			</pods>
-		</podspec>
+<podspec>
+    <config>
+        <source url="https://cdn.cocoapods.org/" />
+    </config>
+
+    <pods use-frameworks="true">
+
+        <!-- Firebase Core -->
+        <pod name="FirebaseCore" spec="10.24.0" />
+
+        <!-- Firebase Auth (optional but required for Messaging token management) -->
+        <pod name="FirebaseAuth" spec="10.24.0" />
+
+        <!-- Analytics -->
+        <pod name="FirebaseAnalytics" spec="10.24.0" />
+
+        <!-- Cloud Messaging -->
+        <pod name="FirebaseMessaging" spec="10.24.0" />
+
+        <!-- Performance Monitoring -->
+        <pod name="FirebasePerformance" spec="10.24.0" />
+
+        <!-- Remote Config -->
+        <pod name="FirebaseRemoteConfig" spec="10.24.0" />
+
+        <!-- Crashlytics -->
+        <pod name="FirebaseCrashlytics" spec="10.24.0" />
+
+        <!-- Cloud Functions -->
+        <pod name="FirebaseFunctions" spec="10.24.0" />
+
+        <!-- Installations (required for Messaging + Analytics) -->
+        <pod name="FirebaseInstallations" spec="10.24.0" />
+
+        <!-- Removed due to build failures:
+             FirebaseInAppMessaging
+             FirebaseFirestore
+             GoogleSignIn
+             GoogleTagManager
+        -->
+
+    </pods>
+
+    <podfile>
+        <![CDATA[
+			post_install do |installer|
+				installer.pods_project.targets.each do |target|
+					target.build_configurations.each do |config|
+
+						# Force modern iOS deployment target (Cordova sometimes injects iOS 10)
+						config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '17.0'
+
+						# Fix BoringSSL-GRPC clang -G flag issue (dependency of Messaging)
+						if target.name == 'BoringSSL-GRPC'
+							flags = config.build_settings['OTHER_CFLAGS']
+							if flags.is_a?(Array)
+								flags.reject! { |f| f == '-G' }
+								config.build_settings['OTHER_CFLAGS'] = flags
+							end
+
+							flagspp = config.build_settings['OTHER_CPLUSPLUSFLAGS']
+							if flagspp.is_a?(Array)
+								flagspp.reject! { |f| f == '-G' }
+								config.build_settings['OTHER_CPLUSPLUSFLAGS'] = flagspp
+							end
+						end
+
+					end
+				end
+			end
+        ]]>
+    </podfile>
+</podspec>
+
 
 	</platform>
 
