@@ -5,7 +5,7 @@
 
 
 @import UserNotifications;
-@import FirebaseFirestore;
+// @import FirebaseFirestore;
 
 // Implement UNUserNotificationCenterDelegate to receive display notification via APNS for devices running iOS 10 and above.
 // Implement FIRMessagingDelegate to receive data message via FCM for devices running iOS 10 and above.
