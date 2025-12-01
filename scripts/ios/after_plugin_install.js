@@ -1,5 +1,5 @@
-// Disabled for Appflow compatibility.
-// The original script attempted to modify the Xcode project before it exists.
-module.exports = function(context) {
+// after_plugin_install.js — Patched to disable Xcode project editing
+module.exports = function (context) {
+    console.log("[Firebasex] Skipped Xcode pbxproj modifications (patched)");
     return;
 };
