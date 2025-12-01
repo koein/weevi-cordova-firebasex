@@ -90,21 +90,6 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
             // This property is persistent thus ensuring it stays in sync with FCM settings in newer versions of the app.
             [[FIRMessaging messaging] setAutoInitEnabled:NO];
         }
-    
-        // Setup Firestore
-        [FirebasePlugin setFirestore:[FIRFirestore firestore]];
-        
-        authStateChangeListener = [[FIRAuth auth] addAuthStateDidChangeListener:^(FIRAuth * _Nonnull auth, FIRUser * _Nullable user) {
-            @try {
-                if(!authStateChangeListenerInitialized){
-                    authStateChangeListenerInitialized = true;
-                }else{
-                    [FirebasePlugin.firebasePlugin executeGlobalJavascript:[NSString stringWithFormat:@"FirebasePlugin._onAuthStateChange(%@)", (user != nil ? @"true": @"false")]];
-                }
-            }@catch (NSException *exception) {
-                [FirebasePlugin.firebasePlugin handlePluginExceptionWithoutContext:exception];
-            }
-        }];
         
         authIdTokenChangeListener = [[FIRAuth auth] addIDTokenDidChangeListener:^(FIRAuth * _Nonnull auth, FIRUser * _Nullable user) {
             @try {
