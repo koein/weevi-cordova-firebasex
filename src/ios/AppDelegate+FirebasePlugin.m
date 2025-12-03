@@ -5,7 +5,7 @@
 
 
 @import UserNotifications;
-// @import FirebaseFirestore;
+@import FirebaseFirestore;
 
 // Implement UNUserNotificationCenterDelegate to receive display notification via APNS for devices running iOS 10 and above.
 // Implement FIRMessagingDelegate to receive data message via FCM for devices running iOS 10 and above.
@@ -59,7 +59,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
             
             // if file is successfully found, use it
             if(filePath){
-                [FirebasePlugin.firebasePlugin fpLogMessage:@"GoogleService-Info.plist found, setup: [FIRApp configureWithOptions]"];
+                [FirebasePlugin.firebasePlugin _logMessage:@"GoogleService-Info.plist found, setup: [FIRApp configureWithOptions]"];
                 // create firebase configure options passing .plist as content
                 FIROptions *options = [[FIROptions alloc] initWithContentsOfFile:filePath];
 
@@ -69,7 +69,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
                 isFirebaseInitializedWithPlist = true;
             }else{
                 // no .plist found, try default App
-                [FirebasePlugin.firebasePlugin fpLogError:@"GoogleService-Info.plist NOT FOUND, setup: [FIRApp defaultApp]"];
+                [FirebasePlugin.firebasePlugin _logError:@"GoogleService-Info.plist NOT FOUND, setup: [FIRApp defaultApp]"];
                 [FIRApp configure];
             }
         }else{
@@ -90,6 +90,21 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
             // This property is persistent thus ensuring it stays in sync with FCM settings in newer versions of the app.
             [[FIRMessaging messaging] setAutoInitEnabled:NO];
         }
+    
+        // Setup Firestore
+        [FirebasePlugin setFirestore:[FIRFirestore firestore]];
+        
+        authStateChangeListener = [[FIRAuth auth] addAuthStateDidChangeListener:^(FIRAuth * _Nonnull auth, FIRUser * _Nullable user) {
+            @try {
+                if(!authStateChangeListenerInitialized){
+                    authStateChangeListenerInitialized = true;
+                }else{
+                    [FirebasePlugin.firebasePlugin executeGlobalJavascript:[NSString stringWithFormat:@"FirebasePlugin._onAuthStateChange(%@)", (user != nil ? @"true": @"false")]];
+                }
+            }@catch (NSException *exception) {
+                [FirebasePlugin.firebasePlugin handlePluginExceptionWithoutContext:exception];
+            }
+        }];
         
         authIdTokenChangeListener = [[FIRAuth auth] addIDTokenDidChangeListener:^(FIRAuth * _Nonnull auth, FIRUser * _Nullable user) {
             @try {
@@ -136,7 +151,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     self.applicationInBackground = @(NO);
     @try {
-        [FirebasePlugin.firebasePlugin fpLogMessage:@"Enter foreground"];
+        [FirebasePlugin.firebasePlugin _logMessage:@"Enter foreground"];
         [FirebasePlugin.firebasePlugin executeGlobalJavascript:@"FirebasePlugin._applicationDidBecomeActive()"];
     }@catch (NSException *exception) {
         [FirebasePlugin.firebasePlugin handlePluginExceptionWithoutContext:exception];
@@ -146,7 +161,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     self.applicationInBackground = @(YES);
     @try {
-        [FirebasePlugin.firebasePlugin fpLogMessage:@"Enter background"];
+        [FirebasePlugin.firebasePlugin _logMessage:@"Enter background"];
         [FirebasePlugin.firebasePlugin executeGlobalJavascript:@"FirebasePlugin._applicationDidEnterBackground()"];
     }@catch (NSException *exception) {
         [FirebasePlugin.firebasePlugin handlePluginExceptionWithoutContext:exception];
@@ -157,7 +172,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
 # pragma mark - FIRMessagingDelegate
 - (void)messaging:(FIRMessaging *)messaging didReceiveRegistrationToken:(NSString *)fcmToken {
     @try{
-        [FirebasePlugin.firebasePlugin fpLogMessage:[NSString stringWithFormat:@"didReceiveRegistrationToken: %@", fcmToken]];
+        [FirebasePlugin.firebasePlugin _logMessage:[NSString stringWithFormat:@"didReceiveRegistrationToken: %@", fcmToken]];
         [FirebasePlugin.firebasePlugin sendToken:fcmToken];
     }@catch (NSException *exception) {
         [FirebasePlugin.firebasePlugin handlePluginExceptionWithoutContext:exception];
@@ -169,7 +184,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
         return;
     }
     [FIRMessaging messaging].APNSToken = deviceToken;
-    [FirebasePlugin.firebasePlugin fpLogMessage:[NSString stringWithFormat:@"didRegisterForRemoteNotificationsWithDeviceToken: %@", deviceToken]];
+    [FirebasePlugin.firebasePlugin _logMessage:[NSString stringWithFormat:@"didRegisterForRemoteNotificationsWithDeviceToken: %@", deviceToken]];
     [FirebasePlugin.firebasePlugin sendApnsToken:[FirebasePlugin.firebasePlugin hexadecimalStringFromData:deviceToken]];
 }
 
@@ -203,11 +218,11 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
             [mutableUserInfo setValue:@"data" forKey:@"messageType"];
         }
 
-        [FirebasePlugin.firebasePlugin fpLogMessage:[NSString stringWithFormat:@"didReceiveRemoteNotification: %@", mutableUserInfo]];
+        [FirebasePlugin.firebasePlugin _logMessage:[NSString stringWithFormat:@"didReceiveRemoteNotification: %@", mutableUserInfo]];
         
         completionHandler(UIBackgroundFetchResultNewData);
         if([self.applicationInBackground isEqual:[NSNumber numberWithBool:YES]] && isContentAvailable){
-            [FirebasePlugin.firebasePlugin fpLogError:@"didReceiveRemoteNotification: omitting foreground notification as content-available:1 so system notification will be shown"];
+            [FirebasePlugin.firebasePlugin _logError:@"didReceiveRemoteNotification: omitting foreground notification as content-available:1 so system notification will be shown"];
         }else{
             [self processMessageForForegroundNotification:mutableUserInfo];
         }
@@ -312,13 +327,13 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
                 UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:@"local_notification" content:objNotificationContent trigger:trigger];
                 [[UNUserNotificationCenter currentNotificationCenter] addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
                     if (!error) {
-                        [FirebasePlugin.firebasePlugin fpLogMessage:@"Local Notification succeeded"];
+                        [FirebasePlugin.firebasePlugin _logMessage:@"Local Notification succeeded"];
                     } else {
-                        [FirebasePlugin.firebasePlugin fpLogError:[NSString stringWithFormat:@"Local Notification failed: %@", error.description]];
+                        [FirebasePlugin.firebasePlugin _logError:[NSString stringWithFormat:@"Local Notification failed: %@", error.description]];
                     }
                 }];
             }else{
-                [FirebasePlugin.firebasePlugin fpLogError:@"processMessageForForegroundNotification: cannot show notification as permission denied"];
+                [FirebasePlugin.firebasePlugin _logError:@"processMessageForForegroundNotification: cannot show notification as permission denied"];
             }
         }@catch (NSException *exception) {
             [FirebasePlugin.firebasePlugin handlePluginExceptionWithoutContext:exception];
@@ -330,7 +345,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
     if (!self.isFCMEnabled) {
         return;
     }
-    [FirebasePlugin.firebasePlugin fpLogError:[NSString stringWithFormat:@"didFailToRegisterForRemoteNotificationsWithError: %@", error.description]];
+    [FirebasePlugin.firebasePlugin _logError:[NSString stringWithFormat:@"didFailToRegisterForRemoteNotificationsWithError: %@", error.description]];
 }
 
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center openSettingsForNotification:(UNNotification *)notification
@@ -361,7 +376,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
                 ];
                 return;
             } else {
-                [FirebasePlugin.firebasePlugin fpLogError:@"willPresentNotification: aborting as not a supported UNNotificationTrigger"];
+                [FirebasePlugin.firebasePlugin _logError:@"willPresentNotification: aborting as not a supported UNNotificationTrigger"];
                 return;
             }
         }
@@ -376,13 +391,13 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
         }
 
         // Print full message.
-        [FirebasePlugin.firebasePlugin fpLogMessage:[NSString stringWithFormat:@"willPresentNotification: %@", mutableUserInfo]];
+        [FirebasePlugin.firebasePlugin _logMessage:[NSString stringWithFormat:@"willPresentNotification: %@", mutableUserInfo]];
 
         
         NSDictionary* aps = [mutableUserInfo objectForKey:@"aps"];
         bool isContentAvailable = [[aps objectForKey:@"content-available"] isEqualToNumber:[NSNumber numberWithInt:1]];
         if(isContentAvailable){
-            [FirebasePlugin.firebasePlugin fpLogError:@"willPresentNotification: aborting as content-available:1 so system notification will be shown"];
+            [FirebasePlugin.firebasePlugin _logError:@"willPresentNotification: aborting as content-available:1 so system notification will be shown"];
             return;
         }
         
@@ -392,7 +407,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
         bool hasSound = [aps objectForKey:@"sound"] != nil;
 
         if(showForegroundNotification){
-            [FirebasePlugin.firebasePlugin fpLogMessage:[NSString stringWithFormat:@"willPresentNotification: foreground notification alert=%@, badge=%@, sound=%@", hasAlert ? @"YES" : @"NO", hasBadge ? @"YES" : @"NO", hasSound ? @"YES" : @"NO"]];
+            [FirebasePlugin.firebasePlugin _logMessage:[NSString stringWithFormat:@"willPresentNotification: foreground notification alert=%@, badge=%@, sound=%@", hasAlert ? @"YES" : @"NO", hasBadge ? @"YES" : @"NO", hasSound ? @"YES" : @"NO"]];
             if(hasAlert && hasBadge && hasSound){
                 completionHandler(UNNotificationPresentationOptionAlert + UNNotificationPresentationOptionBadge + UNNotificationPresentationOptionSound);
             }else if(hasAlert && hasBadge){
@@ -409,7 +424,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
                 completionHandler(UNNotificationPresentationOptionSound);
             }
         }else{
-            [FirebasePlugin.firebasePlugin fpLogMessage:@"willPresentNotification: foreground notification not set"];
+            [FirebasePlugin.firebasePlugin _logMessage:@"willPresentNotification: foreground notification not set"];
         }
         
         if(![messageType isEqualToString:@"data"]){
@@ -439,7 +454,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
                 ];
                 return;
             } else {
-                [FirebasePlugin.firebasePlugin fpLogMessage:@"didReceiveNotificationResponse: aborting as not a supported UNNotificationTrigger"];
+                [FirebasePlugin.firebasePlugin _logMessage:@"didReceiveNotificationResponse: aborting as not a supported UNNotificationTrigger"];
                 return;
             }
         }
@@ -466,7 +481,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
         }
         
         // Print full message.
-        [FirebasePlugin.firebasePlugin fpLogInfo:[NSString stringWithFormat:@"didReceiveNotificationResponse: %@", mutableUserInfo]];
+        [FirebasePlugin.firebasePlugin _logInfo:[NSString stringWithFormat:@"didReceiveNotificationResponse: %@", mutableUserInfo]];
 
         [FirebasePlugin.firebasePlugin sendNotification:mutableUserInfo];
 
@@ -521,7 +536,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
                 }
             }
             if(errorMessage != nil){
-                [FirebasePlugin.firebasePlugin fpLogError:errorMessage];
+                [FirebasePlugin.firebasePlugin _logError:errorMessage];
                 pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
             }
             if ([FirebasePlugin firebasePlugin].appleSignInCallbackId != nil) {
@@ -536,7 +551,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
 - (void)authorizationController:(ASAuthorizationController *)controller
            didCompleteWithError:(NSError *)error API_AVAILABLE(ios(13.0)) {
     NSString* errorMessage = [NSString stringWithFormat:@"Sign in with Apple errored: %@", error];
-    [FirebasePlugin.firebasePlugin fpLogError:errorMessage];
+    [FirebasePlugin.firebasePlugin _logError:errorMessage];
     if ([FirebasePlugin firebasePlugin].appleSignInCallbackId != nil) {
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
         [[FirebasePlugin firebasePlugin].commandDelegate sendPluginResult:pluginResult callbackId:[FirebasePlugin firebasePlugin].appleSignInCallbackId];
