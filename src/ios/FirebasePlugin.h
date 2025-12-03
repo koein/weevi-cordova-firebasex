@@ -121,9 +121,9 @@
 + (NSString*) appleSignInNonce;
 - (void) handlePluginExceptionWithContext: (NSException*) exception :(CDVInvokedUrlCommand*)command;
 - (void) handlePluginExceptionWithoutContext: (NSException*) exception;
-- (void) _logError: (NSString*)msg;
-- (void) _logInfo: (NSString*)msg;
-- (void) _logMessage: (NSString*)msg;
+- (void) fpLogError: (NSString*)msg;
+- (void) fpLogInfo: (NSString*)msg;
+- (void) fpLogMessage: (NSString*)msg;
 - (BOOL) _shouldEnableCrashlytics;
 - (NSNumber*) saveAuthCredential: (FIRAuthCredential *) authCredential;
 - (void)executeGlobalJavascript: (NSString*)jsString;

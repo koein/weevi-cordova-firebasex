@@ -69,7 +69,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
                 isFirebaseInitializedWithPlist = true;
             }else{
                 // no .plist found, try default App
-                [FirebasePlugin.firebasePlugin _logError:@"GoogleService-Info.plist NOT FOUND, setup: [FIRApp defaultApp]"];
+                [FirebasePlugin.firebasePlugin fpLogError:@"GoogleService-Info.plist NOT FOUND, setup: [FIRApp defaultApp]"];
                 [FIRApp configure];
             }
         }else{
@@ -207,7 +207,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
         
         completionHandler(UIBackgroundFetchResultNewData);
         if([self.applicationInBackground isEqual:[NSNumber numberWithBool:YES]] && isContentAvailable){
-            [FirebasePlugin.firebasePlugin _logError:@"didReceiveRemoteNotification: omitting foreground notification as content-available:1 so system notification will be shown"];
+            [FirebasePlugin.firebasePlugin fpLogError:@"didReceiveRemoteNotification: omitting foreground notification as content-available:1 so system notification will be shown"];
         }else{
             [self processMessageForForegroundNotification:mutableUserInfo];
         }
@@ -314,11 +314,11 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
                     if (!error) {
                         [FirebasePlugin.firebasePlugin _logMessage:@"Local Notification succeeded"];
                     } else {
-                        [FirebasePlugin.firebasePlugin _logError:[NSString stringWithFormat:@"Local Notification failed: %@", error.description]];
+                        [FirebasePlugin.firebasePlugin fpLogError:[NSString stringWithFormat:@"Local Notification failed: %@", error.description]];
                     }
                 }];
             }else{
-                [FirebasePlugin.firebasePlugin _logError:@"processMessageForForegroundNotification: cannot show notification as permission denied"];
+                [FirebasePlugin.firebasePlugin fpLogError:@"processMessageForForegroundNotification: cannot show notification as permission denied"];
             }
         }@catch (NSException *exception) {
             [FirebasePlugin.firebasePlugin handlePluginExceptionWithoutContext:exception];
@@ -330,7 +330,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
     if (!self.isFCMEnabled) {
         return;
     }
-    [FirebasePlugin.firebasePlugin _logError:[NSString stringWithFormat:@"didFailToRegisterForRemoteNotificationsWithError: %@", error.description]];
+    [FirebasePlugin.firebasePlugin fpLogError:[NSString stringWithFormat:@"didFailToRegisterForRemoteNotificationsWithError: %@", error.description]];
 }
 
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center openSettingsForNotification:(UNNotification *)notification
@@ -361,7 +361,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
                 ];
                 return;
             } else {
-                [FirebasePlugin.firebasePlugin _logError:@"willPresentNotification: aborting as not a supported UNNotificationTrigger"];
+                [FirebasePlugin.firebasePlugin fpLogError:@"willPresentNotification: aborting as not a supported UNNotificationTrigger"];
                 return;
             }
         }
@@ -382,7 +382,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
         NSDictionary* aps = [mutableUserInfo objectForKey:@"aps"];
         bool isContentAvailable = [[aps objectForKey:@"content-available"] isEqualToNumber:[NSNumber numberWithInt:1]];
         if(isContentAvailable){
-            [FirebasePlugin.firebasePlugin _logError:@"willPresentNotification: aborting as content-available:1 so system notification will be shown"];
+            [FirebasePlugin.firebasePlugin fpLogError:@"willPresentNotification: aborting as content-available:1 so system notification will be shown"];
             return;
         }
         
@@ -521,7 +521,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
                 }
             }
             if(errorMessage != nil){
-                [FirebasePlugin.firebasePlugin _logError:errorMessage];
+                [FirebasePlugin.firebasePlugin fpLogError:errorMessage];
                 pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
             }
             if ([FirebasePlugin firebasePlugin].appleSignInCallbackId != nil) {
@@ -536,7 +536,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
 - (void)authorizationController:(ASAuthorizationController *)controller
            didCompleteWithError:(NSError *)error API_AVAILABLE(ios(13.0)) {
     NSString* errorMessage = [NSString stringWithFormat:@"Sign in with Apple errored: %@", error];
-    [FirebasePlugin.firebasePlugin _logError:errorMessage];
+    [FirebasePlugin.firebasePlugin fpLogError:errorMessage];
     if ([FirebasePlugin firebasePlugin].appleSignInCallbackId != nil) {
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
         [[FirebasePlugin firebasePlugin].commandDelegate sendPluginResult:pluginResult callbackId:[FirebasePlugin firebasePlugin].appleSignInCallbackId];
