@@ -59,7 +59,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
             
             // if file is successfully found, use it
             if(filePath){
-                [FirebasePlugin.firebasePlugin _logMessage:@"GoogleService-Info.plist found, setup: [FIRApp configureWithOptions]"];
+                [FirebasePlugin.firebasePlugin fpLogMessage:@"GoogleService-Info.plist found, setup: [FIRApp configureWithOptions]"];
                 // create firebase configure options passing .plist as content
                 FIROptions *options = [[FIROptions alloc] initWithContentsOfFile:filePath];
 
@@ -136,7 +136,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     self.applicationInBackground = @(NO);
     @try {
-        [FirebasePlugin.firebasePlugin _logMessage:@"Enter foreground"];
+        [FirebasePlugin.firebasePlugin fpLogMessage:@"Enter foreground"];
         [FirebasePlugin.firebasePlugin executeGlobalJavascript:@"FirebasePlugin._applicationDidBecomeActive()"];
     }@catch (NSException *exception) {
         [FirebasePlugin.firebasePlugin handlePluginExceptionWithoutContext:exception];
@@ -146,7 +146,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     self.applicationInBackground = @(YES);
     @try {
-        [FirebasePlugin.firebasePlugin _logMessage:@"Enter background"];
+        [FirebasePlugin.firebasePlugin fpLogMessage:@"Enter background"];
         [FirebasePlugin.firebasePlugin executeGlobalJavascript:@"FirebasePlugin._applicationDidEnterBackground()"];
     }@catch (NSException *exception) {
         [FirebasePlugin.firebasePlugin handlePluginExceptionWithoutContext:exception];
@@ -157,7 +157,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
 # pragma mark - FIRMessagingDelegate
 - (void)messaging:(FIRMessaging *)messaging didReceiveRegistrationToken:(NSString *)fcmToken {
     @try{
-        [FirebasePlugin.firebasePlugin _logMessage:[NSString stringWithFormat:@"didReceiveRegistrationToken: %@", fcmToken]];
+        [FirebasePlugin.firebasePlugin fpLogMessage:[NSString stringWithFormat:@"didReceiveRegistrationToken: %@", fcmToken]];
         [FirebasePlugin.firebasePlugin sendToken:fcmToken];
     }@catch (NSException *exception) {
         [FirebasePlugin.firebasePlugin handlePluginExceptionWithoutContext:exception];
@@ -169,7 +169,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
         return;
     }
     [FIRMessaging messaging].APNSToken = deviceToken;
-    [FirebasePlugin.firebasePlugin _logMessage:[NSString stringWithFormat:@"didRegisterForRemoteNotificationsWithDeviceToken: %@", deviceToken]];
+    [FirebasePlugin.firebasePlugin fpLogMessage:[NSString stringWithFormat:@"didRegisterForRemoteNotificationsWithDeviceToken: %@", deviceToken]];
     [FirebasePlugin.firebasePlugin sendApnsToken:[FirebasePlugin.firebasePlugin hexadecimalStringFromData:deviceToken]];
 }
 
@@ -203,7 +203,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
             [mutableUserInfo setValue:@"data" forKey:@"messageType"];
         }
 
-        [FirebasePlugin.firebasePlugin _logMessage:[NSString stringWithFormat:@"didReceiveRemoteNotification: %@", mutableUserInfo]];
+        [FirebasePlugin.firebasePlugin fpLogMessage:[NSString stringWithFormat:@"didReceiveRemoteNotification: %@", mutableUserInfo]];
         
         completionHandler(UIBackgroundFetchResultNewData);
         if([self.applicationInBackground isEqual:[NSNumber numberWithBool:YES]] && isContentAvailable){
@@ -312,7 +312,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
                 UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:@"local_notification" content:objNotificationContent trigger:trigger];
                 [[UNUserNotificationCenter currentNotificationCenter] addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
                     if (!error) {
-                        [FirebasePlugin.firebasePlugin _logMessage:@"Local Notification succeeded"];
+                        [FirebasePlugin.firebasePlugin fpLogMessage:@"Local Notification succeeded"];
                     } else {
                         [FirebasePlugin.firebasePlugin fpLogError:[NSString stringWithFormat:@"Local Notification failed: %@", error.description]];
                     }
@@ -376,7 +376,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
         }
 
         // Print full message.
-        [FirebasePlugin.firebasePlugin _logMessage:[NSString stringWithFormat:@"willPresentNotification: %@", mutableUserInfo]];
+        [FirebasePlugin.firebasePlugin fpLogMessage:[NSString stringWithFormat:@"willPresentNotification: %@", mutableUserInfo]];
 
         
         NSDictionary* aps = [mutableUserInfo objectForKey:@"aps"];
@@ -392,7 +392,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
         bool hasSound = [aps objectForKey:@"sound"] != nil;
 
         if(showForegroundNotification){
-            [FirebasePlugin.firebasePlugin _logMessage:[NSString stringWithFormat:@"willPresentNotification: foreground notification alert=%@, badge=%@, sound=%@", hasAlert ? @"YES" : @"NO", hasBadge ? @"YES" : @"NO", hasSound ? @"YES" : @"NO"]];
+            [FirebasePlugin.firebasePlugin fpLogMessage:[NSString stringWithFormat:@"willPresentNotification: foreground notification alert=%@, badge=%@, sound=%@", hasAlert ? @"YES" : @"NO", hasBadge ? @"YES" : @"NO", hasSound ? @"YES" : @"NO"]];
             if(hasAlert && hasBadge && hasSound){
                 completionHandler(UNNotificationPresentationOptionAlert + UNNotificationPresentationOptionBadge + UNNotificationPresentationOptionSound);
             }else if(hasAlert && hasBadge){
@@ -409,7 +409,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
                 completionHandler(UNNotificationPresentationOptionSound);
             }
         }else{
-            [FirebasePlugin.firebasePlugin _logMessage:@"willPresentNotification: foreground notification not set"];
+            [FirebasePlugin.firebasePlugin fpLogMessage:@"willPresentNotification: foreground notification not set"];
         }
         
         if(![messageType isEqualToString:@"data"]){
@@ -439,7 +439,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
                 ];
                 return;
             } else {
-                [FirebasePlugin.firebasePlugin _logMessage:@"didReceiveNotificationResponse: aborting as not a supported UNNotificationTrigger"];
+                [FirebasePlugin.firebasePlugin fpLogMessage:@"didReceiveNotificationResponse: aborting as not a supported UNNotificationTrigger"];
                 return;
             }
         }
@@ -466,7 +466,7 @@ static __weak id <UNUserNotificationCenterDelegate> _prevUserNotificationCenterD
         }
         
         // Print full message.
-        [FirebasePlugin.firebasePlugin _logInfo:[NSString stringWithFormat:@"didReceiveNotificationResponse: %@", mutableUserInfo]];
+        [FirebasePlugin.firebasePlugin fpLogInfo:[NSString stringWithFormat:@"didReceiveNotificationResponse: %@", mutableUserInfo]];
 
         [FirebasePlugin.firebasePlugin sendNotification:mutableUserInfo];
 
