@@ -30,6 +30,8 @@
 		<preference name="ANDROID_ICON_ACCENT" default="#FF00FFFF" />
 		<preference name="ANDROID_FIREBASE_PERFORMANCE_MONITORING" default="false" />
 
+		   <framework src="com.google.gms:google-services:4.4.2" custom="true" type="gradleReference" />
+
 		<js-module name="FirebasePlugin" src="www/firebase.js">
 			<clobbers target="FirebasePlugin" />
 		</js-module>
