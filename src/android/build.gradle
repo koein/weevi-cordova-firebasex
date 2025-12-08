@@ -44,15 +44,3 @@ android {
     }
 }
 
-// Safely apply Google Services plugin *after* the Android app plugin is available
-cdvPluginPostBuildExtras.add({
-    afterEvaluate {
-        rootProject.subprojects {
-            if (name == "app") {
-                if (!plugins.hasPlugin('com.google.gms.google-services')) {
-                    apply plugin: 'com.google.gms.google-services'
-                }
-            }
-        }
-    }
-})
