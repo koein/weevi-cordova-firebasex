@@ -27,7 +27,6 @@
 	<preference name="GOOGLE_ANALYTICS_DEFAULT_ALLOW_AD_PERSONALIZATION_SIGNALS" default="true" />
 
 	<platform name="android">
-	<framework src="com.google.gms:google-services:4.4.1" custom="true" type="gradleReference" />
 		<preference name="ANDROID_ICON_ACCENT" default="#FF00FFFF" />
 		<preference name="ANDROID_FIREBASE_PERFORMANCE_MONITORING" default="false" />
 
