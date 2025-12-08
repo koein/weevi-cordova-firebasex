@@ -8,6 +8,8 @@
 
 	<license>MIT</license>
 
+	<preference name="ANDROID_FIREBASE_PLUGIN_APPLY_MODE" default="before_android_app_plugin" />
+
 	<engines>
 		<engine name="cordova" version=">=9" />
 		<engine name="cordova-android" version=">=8" />
