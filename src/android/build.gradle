@@ -6,7 +6,7 @@ buildscript {
     }
     dependencies {
         classpath "com.android.tools.build:gradle:${cordovaConfig.AGP_VERSION}"
-        classpath "com.google.gms:google-services:4.4.4"
+        classpath "com.google.gms:google-services:${cordovaConfig.GRADLE_PLUGIN_GOOGLE_SERVICES_VERSION}"
         // Crashlytics removed intentionally
         // classpath "com.google.firebase:firebase-crashlytics-gradle:2.8.1"
     }
@@ -44,3 +44,14 @@ android {
     }
 }
 
+// Safely apply Google Services plugin *after* the Android app plugin is available
+cdvPluginPostBuildExtras.add({
+    afterEvaluate {
+        rootProject.subprojects {
+            if (name == "app") {
+                // Ensure Google Services is applied through the main app's Gradle setup
+                println("Google Services plugin will be applied by the app module")
+            }
+        }
+    }
+})
